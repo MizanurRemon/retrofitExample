@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">retrofitExample</string>
+    <string name="password_too_short">Password Too Short</string>
+    <string name="not_match">Password Not Match</string>
+</resources>
