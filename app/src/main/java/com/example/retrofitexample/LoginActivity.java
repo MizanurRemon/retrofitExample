@@ -1,7 +1,5 @@
 package com.example.retrofitexample;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,14 +8,13 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-
-import org.w3c.dom.Text;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -39,6 +36,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         try {
             this.getSupportActionBar().hide();
         } catch (NullPointerException e) {
+        }
+
+        SessionManagement sessionManagement = new SessionManagement(LoginActivity.this);
+        int userID = sessionManagement.getSession();
+
+        if (userID != -1) {
+            movetoActivity();
         }
 
         goRegister = (TextView) findViewById(R.id.goRegisterID);
@@ -90,8 +94,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     public void sendPost(String mail, String pass) {
-        Log.d("Email:: ", mail);
-        Log.d("Password:: ", pass);
         Call<FetchData> call = loginService.savePost(mail, pass);
         call.enqueue(new Callback<FetchData>() {
             @Override
@@ -99,10 +101,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 FetchData ob=response.body();
                 String userid=ob.getUserid();
                 Log.d("UserID:: ", userid);
+                int user_session_id = Integer.parseInt(userid);
                 progressDialog.dismiss();
-                if(!(userid.equals("-1"))){
-                    startActivity(new Intent(LoginActivity.this, viewPage.class));
-
+                if(!(userid.equals("-1"))) {
+                    SessionManagement sessionManagement = new SessionManagement(LoginActivity.this);
+                    sessionManagement.saveSession(user_session_id);
+                    movetoActivity();
                 }else{
                     Toast toast = Toast.makeText(LoginActivity.this, "Invalid email/password", Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.CENTER, 0, 0);
@@ -120,4 +124,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         });
 
     }
+
+    private void movetoActivity() {
+
+        Intent intent = new Intent(LoginActivity.this, viewPage.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+    }
+
+
 }

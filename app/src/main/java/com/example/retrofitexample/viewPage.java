@@ -1,22 +1,27 @@
 package com.example.retrofitexample;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Gravity;
-import android.widget.ListView;
-import android.widget.Toast;
-
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
+
+import static com.example.retrofitexample.R.id.logoutID;
 
 public class viewPage extends AppCompatActivity {
     RecyclerView recyclerView;
@@ -24,6 +29,7 @@ public class viewPage extends AppCompatActivity {
 
     private DataAdapter dataAdapter;
     private List<FetchData> fetchData;
+    ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +40,7 @@ public class viewPage extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         getdataservice = ApiUtils.getDataInterface();
+        progressDialog = new ProgressDialog(this);
 
         getdata();
     }
@@ -50,11 +57,42 @@ public class viewPage extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<FetchData>> call, Throwable t) {
-                Toast toast = Toast.makeText(viewPage.this, t.getMessage(),Toast.LENGTH_SHORT);
+                Toast toast = Toast.makeText(viewPage.this, t.getMessage(), Toast.LENGTH_SHORT);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
                 Log.d("Error", t.getMessage());
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == logoutID) {
+            SessionManagement sessionManagement = new SessionManagement(viewPage.this);
+            sessionManagement.removeSession();
+            progressDialog.setMessage("Logging Out");
+            progressDialog.show();
+            moveToLogin();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void moveToLogin() {
+        Intent intent = new Intent(viewPage.this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
+        System.exit(0);
     }
 }
